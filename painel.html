@@ -66,14 +66,14 @@
       const novoPrazo = prompt("Confirme ou altere o prazo de entrega:", prazo);
       if (!novoPrazo) return;
       alert("Ticket aceito! Email será enviado.");
-      // Aqui será incluída integração futura com Apps Script para atualizar status e enviar e-mail.
+      // TODO: Enviar email via Apps Script com confirmação e novo prazo
     }
 
     function recusarTicket(protocolo, email) {
       const motivo = prompt("Informe o motivo da recusa:");
       if (!motivo) return;
       alert("Ticket recusado. Email será enviado ao solicitante.");
-      // Aqui será incluída integração futura com Apps Script para atualizar status e enviar e-mail.
+      // TODO: Enviar email via Apps Script com justificativa
     }
   </script>
 </body>
