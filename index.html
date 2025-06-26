@@ -1,0 +1,63 @@
+<!-- PÁGINA 1: Formulário de Solicitação de Ticket -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Solicitação de Ticket - Nortelab</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    label { display: block; margin-top: 10px; }
+    textarea, input, select { width: 100%; padding: 5px; margin-top: 5px; }
+    button { margin-top: 15px; padding: 10px 20px; }
+  </style>
+</head>
+<body>
+  <h2>Solicitação de Abertura de Ticket</h2>
+  <form id="formTicket">
+    <label>Nome do solicitante:<input type="text" name="nome" required></label>
+    <label>Setor:
+      <select name="setor" required>
+        <option>Financeiro</option>
+        <option>Recepção</option>
+        <option>Área Técnica</option>
+        <option>Copa</option>
+        <option>TI</option>
+        <option>Outros</option>
+      </select>
+    </label>
+    <label>Motivo da solicitação:<textarea name="motivo" required></textarea></label>
+    <label>Problema detalhado:<textarea name="problema" required></textarea></label>
+    <label>Data máxima para entrega:<input type="date" name="prazo" required></label>
+    <label>E-mail do solicitante:<input type="email" name="email" required></label>
+    <label><input type="radio" name="tipo" value="Comum" checked> Solicitação comum</label>
+    <label><input type="radio" name="tipo" value="Urgente"> Solicitação urgente</label>
+
+    <div id="urgenteExtra" style="display:none">
+      <label>Horário desejado:<input type="time" name="horario"></label>
+      <label>Motivo da urgência:<textarea name="motivo_urgencia"></textarea></label>
+    </div>
+
+    <button type="submit">Enviar Solicitação</button>
+  </form>
+
+  <script>
+    const form = document.getElementById('formTicket');
+    const urgenteExtra = document.getElementById('urgenteExtra');
+    form.tipo.forEach(r => r.addEventListener('change', () => {
+      urgenteExtra.style.display = form.tipo.value === 'Urgente' ? 'block' : 'none';
+    }));
+
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const data = new FormData(form);
+      fetch('https://script.google.com/macros/s/AKfycbyRViahXhnBIbQ5Mw-Ep0OORatVdRAkWsH7VH7iJQoQpXak5Zr8w0OCI8O9fwSDcccr/exec', {
+        method: 'POST',
+        body: data
+      })
+      .then(res => res.text())
+      .then(txt => alert('Solicitação enviada com sucesso!'))
+      .catch(err => alert('Erro ao enviar: ' + err));
+    });
+  </script>
+</body>
+</html>
