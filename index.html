@@ -1,4 +1,4 @@
-<!-- PÁGINA 1: Formulário de Solicitação de Ticket -->
+<!-- Página: Solicitação de Abertura de Ticket -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -37,15 +37,15 @@
       <label>Motivo da urgência:<textarea name="motivo_urgencia"></textarea></label>
     </div>
 
-    <button type="submit">Enviar Solicitação</button>
+    <button type="submit" id="btnEnviar">Enviar Solicitação</button>
   </form>
 
   <script>
     const form = document.getElementById('formTicket');
     const urgenteExtra = document.getElementById('urgenteExtra');
     const prazoInput = document.getElementById('prazo');
+    const btnEnviar = document.getElementById('btnEnviar');
 
-    // Impede datas passadas ou atuais
     const hoje = new Date();
     hoje.setDate(hoje.getDate() + 1);
     prazoInput.min = hoje.toISOString().split('T')[0];
@@ -56,18 +56,27 @@
 
     form.addEventListener('submit', e => {
       e.preventDefault();
+      btnEnviar.disabled = true;
+      btnEnviar.textContent = "Enviando...";
+
       const data = new FormData(form);
       fetch('https://script.google.com/macros/s/AKfycbxBw2zqHfqajJn9LT4mc9qXhRPc6GhfSvkUIRVKV0VBAhpVuQibcOM9S6aBttl2NMsX/exec', {
         method: 'POST',
+        mode: 'no-cors',
         body: data
       })
-      .then(res => res.text())
-      .then(txt => {
+      .then(() => {
         alert('Solicitação enviada com sucesso!');
         form.reset();
         urgenteExtra.style.display = 'none';
+        btnEnviar.disabled = false;
+        btnEnviar.textContent = "Enviar Solicitação";
       })
-      .catch(err => alert('Erro ao enviar: ' + err));
+      .catch(err => {
+        alert('Erro ao enviar: ' + err);
+        btnEnviar.disabled = false;
+        btnEnviar.textContent = "Enviar Solicitação";
+      });
     });
   </script>
 </body>
