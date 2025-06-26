@@ -27,7 +27,7 @@
     </label>
     <label>Motivo da solicitação:<textarea name="motivo" required></textarea></label>
     <label>Problema detalhado:<textarea name="problema" required></textarea></label>
-    <label>Data máxima para entrega:<input type="date" name="prazo" required></label>
+    <label>Data máxima para entrega:<input type="date" name="prazo" id="prazo" required></label>
     <label>E-mail do solicitante:<input type="email" name="email" required></label>
     <label><input type="radio" name="tipo" value="Comum" checked> Solicitação comum</label>
     <label><input type="radio" name="tipo" value="Urgente"> Solicitação urgente</label>
@@ -43,6 +43,13 @@
   <script>
     const form = document.getElementById('formTicket');
     const urgenteExtra = document.getElementById('urgenteExtra');
+    const prazoInput = document.getElementById('prazo');
+
+    // Impede datas passadas ou atuais
+    const hoje = new Date();
+    hoje.setDate(hoje.getDate() + 1);
+    prazoInput.min = hoje.toISOString().split('T')[0];
+
     form.tipo.forEach(r => r.addEventListener('change', () => {
       urgenteExtra.style.display = form.tipo.value === 'Urgente' ? 'block' : 'none';
     }));
@@ -50,12 +57,16 @@
     form.addEventListener('submit', e => {
       e.preventDefault();
       const data = new FormData(form);
-      fetch('https://script.google.com/macros/s/AKfycbxBw2zqHfqajJn9LT4mc9qXhRPc6GhfSvkUIRVKV0VBAhpVuQibcOM9S6aBttl2NMsX/exec', {
+      fetch('https://script.google.com/macros/s/AKfycbyRViahXhnBIbQ5Mw-Ep0OORatVdRAkWsH7VH7iJQoQpXak5Zr8w0OCI8O9fwSDcccr/exec', {
         method: 'POST',
         body: data
       })
       .then(res => res.text())
-      .then(txt => alert('Solicitação enviada com sucesso!'))
+      .then(txt => {
+        alert('Solicitação enviada com sucesso!');
+        form.reset();
+        urgenteExtra.style.display = 'none';
+      })
       .catch(err => alert('Erro ao enviar: ' + err));
     });
   </script>
