@@ -1,8 +1,7 @@
-<!-- PÁGINA 1: Formulário de Solicitação de Ticket -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Solicitação de Ticket - Nortelab</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
@@ -27,7 +26,11 @@
     </label>
     <label>Motivo da solicitação:<textarea name="motivo" required></textarea></label>
     <label>Problema detalhado:<textarea name="problema" required></textarea></label>
-    <label>Data máxima para entrega:<input type="date" name="prazo" id="prazo" required></label>
+
+    <label>Data e horário para entrega:
+      <input type="datetime-local" name="prazo" id="prazo" required>
+    </label>
+
     <label>E-mail do solicitante:<input type="email" name="email" required></label>
     <label><input type="radio" name="tipo" value="Comum" checked> Solicitação comum</label>
     <label><input type="radio" name="tipo" value="Urgente"> Solicitação urgente</label>
@@ -43,12 +46,30 @@
   <script>
     const form = document.getElementById('formTicket');
     const urgenteExtra = document.getElementById('urgenteExtra');
-    const prazoInput = document.getElementById('prazo');
     const btnEnviar = document.getElementById('btnEnviar');
+    const prazoInput = document.getElementById('prazo');
 
     const hoje = new Date();
-    hoje.setDate(hoje.getDate() + 1);
-    prazoInput.min = hoje.toISOString().split('T')[0];
+    hoje.setMinutes(0); hoje.setSeconds(0);
+    hoje.setHours(8); hoje.setDate(hoje.getDate() + 1);
+    prazoInput.min = hoje.toISOString().slice(0, 16);
+
+    // Restringe dias e horários permitidos
+    prazoInput.addEventListener('change', () => {
+      const d = new Date(prazoInput.value);
+      const dia = d.getDay();
+      const hora = d.getHours();
+      const minutos = d.getMinutes();
+
+      const horarioValido =
+        (hora >= 8 && hora < 11) || (hora === 11 && minutos <= 30) ||
+        (hora >= 15 && hora < 18) || (hora === 18 && minutos === 0);
+
+      if (dia === 0 || dia === 6 || !horarioValido) {
+        alert("Escolha dias úteis e horários entre 08:00–11:30 ou 15:30–18:00.");
+        prazoInput.value = "";
+      }
+    });
 
     form.tipo.forEach(r => r.addEventListener('change', () => {
       urgenteExtra.style.display = form.tipo.value === 'Urgente' ? 'block' : 'none';
