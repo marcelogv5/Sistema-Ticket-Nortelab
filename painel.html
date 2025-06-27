@@ -1,79 +1,69 @@
-<!-- PÁGINA 2: Visualização de Tickets Recebidos (Kanban com ações) -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
   <title>Painel de Tickets - Nortelab</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    .kanban { display: flex; gap: 15px; }
-    .coluna { border: 1px solid #ccc; padding: 10px; width: 20%; }
-    .coluna h3 { text-align: center; }
-    .ticket { background: #f0f0f0; padding: 10px; margin: 5px 0; border-left: 5px solid #007bff; position: relative; }
-    .acoes { margin-top: 8px; display: flex; gap: 5px; flex-direction: column; }
-    .acoes button { padding: 5px; font-size: 12px; cursor: pointer; }
+    body { font-family: Arial; margin: 20px; }
+    h2 { margin-bottom: 10px; }
+    .kanban-board { display: flex; gap: 20px; }
+    .column {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      min-height: 300px;
+    }
+    .ticket {
+      background: #f9f9f9;
+      border: 1px solid #ddd;
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      cursor: move;
+    }
+    button { margin-top: 5px; display: block; width: 100%; }
   </style>
 </head>
 <body>
   <h2>Painel de Acompanhamento de Tickets</h2>
-  <div class="kanban">
-    <div class="coluna" id="Solicitado">
-      <h3>Solicitado</h3>
+  <div class="kanban-board">
+    <div class="column" id="pendente">
+      <h3>Pendente</h3>
     </div>
-    <div class="coluna" id="Recebido">
-      <h3>Recebido</h3>
+    <div class="column" id="em_andamento">
+      <h3>Em Andamento</h3>
     </div>
-    <div class="coluna" id="Em processo">
-      <h3>Em processo</h3>
-    </div>
-    <div class="coluna" id="Finalizado">
-      <h3>Finalizado</h3>
-    </div>
-    <div class="coluna" id="Reagendado">
-      <h3>Reagendado</h3>
+    <div class="column" id="concluido">
+      <h3>Concluído</h3>
     </div>
   </div>
 
   <script>
-    const planilhaUrl = 'https://docs.google.com/spreadsheets/d/1jIk2DnDYh9FlrZP0lyCWdyOFNqxiVofMrf9VZS6Bwik/gviz/tq?tqx=out:json';
+    const endpoint = "https://script.google.com/macros/s/AKfycbwvrlQkMsfizh3T3Z5uw-CfkGbY6Q_DZ3xSOPxcei2MrFk6NDXmjOpq_6KQaq-E71Yd/exec";
 
-    fetch(planilhaUrl)
-      .then(res => res.text())
+    fetch(endpoint)
+      .then(r => r.json())
       .then(data => {
-        const json = JSON.parse(data.substr(47).slice(0, -2));
-        const linhas = json.table.rows;
-        linhas.forEach((l, i) => {
-          const protocolo = l.c[0]?.v || "";
-          const nome = l.c[1]?.v || "";
-          const setor = l.c[2]?.v || "";
-          const status = l.c[10]?.v || "Solicitado";
-          const email = l.c[6]?.v || "";
-          const prazo = l.c[5]?.v || "";
-
-          const el = document.createElement('div');
-          el.className = 'ticket';
-          el.innerHTML = `
-            <strong>${protocolo}</strong><br>${nome}<br>${setor}
-            <div class="acoes">
-              <button onclick="aceitarTicket('${protocolo}', '${email}', '${prazo}')">Aceitar</button>
-              <button onclick="recusarTicket('${protocolo}', '${email}')">Recusar</button>
-            </div>`;
-          document.getElementById(status)?.appendChild(el);
+        data.forEach(ticket => {
+          const div = document.createElement('div');
+          div.className = 'ticket';
+          div.draggable = true;
+          div.innerHTML = `
+            <strong>${ticket.nome}</strong><br>
+            <em>${ticket.setor}</em><br>
+            ${ticket.motivo}<br>
+            <small>${ticket.prazo}</small><br>
+            <button onclick="moverTicket(this, 'em_andamento')">Iniciar</button>
+            <button onclick="moverTicket(this, 'concluido')">Concluir</button>
+          `;
+          document.getElementById('pendente').appendChild(div);
         });
       });
 
-    function aceitarTicket(protocolo, email, prazo) {
-      const novoPrazo = prompt("Confirme ou altere o prazo de entrega:", prazo);
-      if (!novoPrazo) return;
-      alert("Ticket aceito! Email será enviado.");
-      // TODO: Enviar email via Apps Script com confirmação e novo prazo
-    }
-
-    function recusarTicket(protocolo, email) {
-      const motivo = prompt("Informe o motivo da recusa:");
-      if (!motivo) return;
-      alert("Ticket recusado. Email será enviado ao solicitante.");
-      // TODO: Enviar email via Apps Script com justificativa
+    function moverTicket(btn, destino) {
+      const card = btn.parentElement;
+      document.getElementById(destino).appendChild(card);
     }
   </script>
 </body>
