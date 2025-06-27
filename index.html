@@ -56,22 +56,25 @@
     // Carrega os horários disponíveis da Agenda Google
     fetch("https://script.google.com/macros/s/AKfycbwvrlQkMsfizh3T3Z5uw-CfkGbY6Q_DZ3xSOPxcei2MrFk6NDXmjOpq_6KQaq-E71Yd/exec")
       .then(res => res.json())
-      .then(data => {
-        selectHorarios.innerHTML = "";
-        if (data.length === 0) {
-          selectHorarios.innerHTML = '<option disabled>Sem horários disponíveis</option>';
-        } else {
-          data.forEach(h => {
-            const opt = document.createElement("option");
-            opt.value = h;
-            opt.textContent = h;
-            selectHorarios.appendChild(opt);
-          });
-        }
-      })
-      .catch(() => {
-        selectHorarios.innerHTML = '<option disabled>Erro ao carregar horários</option>';
-      });
+     .then(data => {
+  selectHorarios.innerHTML = "";
+  if (data.length === 0) {
+    selectHorarios.innerHTML = '<option disabled>Sem horários disponíveis</option>';
+  } else {
+    data.forEach(iso => {
+      const inicio = new Date(iso);
+      const fim = new Date(inicio.getTime() + 60 * 60 * 1000); // +1 hora
+      const formatar = d => d.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+
+      const texto = `${inicio.toLocaleDateString("pt-BR")} - ${formatar(inicio)} às ${formatar(fim)}`;
+
+      const opt = document.createElement("option");
+      opt.value = iso;
+      opt.textContent = texto;
+      selectHorarios.appendChild(opt);
+    });
+  }
+})
 
     // Submete o formulário
     form.addEventListener('submit', e => {
