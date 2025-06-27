@@ -1,7 +1,8 @@
+<!-- Formulário HTML com integração à Agenda Google -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Solicitação de Ticket - Nortelab</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
@@ -27,9 +28,7 @@
     <label>Motivo da solicitação:<textarea name="motivo" required></textarea></label>
     <label>Problema detalhado:<textarea name="problema" required></textarea></label>
 
-    <label>Data e horário para entrega:
-      <input type="datetime-local" name="prazo" id="prazo" required>
-    </label>
+    <label>Escolha um horário disponível:<select name="prazo" id="horarios" required><option>Carregando...</option></select></label>
 
     <label>E-mail do solicitante:<input type="email" name="email" required></label>
     <label><input type="radio" name="tipo" value="Comum" checked> Solicitação comum</label>
@@ -47,54 +46,54 @@
     const form = document.getElementById('formTicket');
     const urgenteExtra = document.getElementById('urgenteExtra');
     const btnEnviar = document.getElementById('btnEnviar');
-    const prazoInput = document.getElementById('prazo');
+    const selectHorarios = document.getElementById('horarios');
 
-    const hoje = new Date();
-    hoje.setMinutes(0); hoje.setSeconds(0);
-    hoje.setHours(8); hoje.setDate(hoje.getDate() + 1);
-    prazoInput.min = hoje.toISOString().slice(0, 16);
-
-    // Restringe dias e horários permitidos
-    prazoInput.addEventListener('change', () => {
-      const d = new Date(prazoInput.value);
-      const dia = d.getDay();
-      const hora = d.getHours();
-      const minutos = d.getMinutes();
-
-      const horarioValido =
-        (hora >= 8 && hora < 11) || (hora === 11 && minutos <= 30) ||
-        (hora >= 15 && hora < 18) || (hora === 18 && minutos === 0);
-
-      if (dia === 0 || dia === 6 || !horarioValido) {
-        alert("Escolha dias úteis e horários entre 08:00–11:30 ou 15:30–18:00.");
-        prazoInput.value = "";
-      }
-    });
-
+    // Exibe campos adicionais se for urgente
     form.tipo.forEach(r => r.addEventListener('change', () => {
       urgenteExtra.style.display = form.tipo.value === 'Urgente' ? 'block' : 'none';
     }));
 
+    // Carrega os horários disponíveis da Agenda Google
+    fetch("https://script.google.com/macros/s/AKfycbwvrlQkMsfizh3T3Z5uw-CfkGbY6Q_DZ3xSOPxcei2MrFk6NDXmjOpq_6KQaq-E71Yd/exec")
+      .then(res => res.json())
+      .then(data => {
+        selectHorarios.innerHTML = "";
+        if (data.length === 0) {
+          selectHorarios.innerHTML = '<option disabled>Sem horários disponíveis</option>';
+        } else {
+          data.forEach(h => {
+            const opt = document.createElement("option");
+            opt.value = h;
+            opt.textContent = h;
+            selectHorarios.appendChild(opt);
+          });
+        }
+      })
+      .catch(() => {
+        selectHorarios.innerHTML = '<option disabled>Erro ao carregar horários</option>';
+      });
+
+    // Submete o formulário
     form.addEventListener('submit', e => {
       e.preventDefault();
       btnEnviar.disabled = true;
       btnEnviar.textContent = "Enviando...";
 
       const data = new FormData(form);
-      fetch('https://script.google.com/macros/s/AKfycbxBw2zqHfqajJn9LT4mc9qXhRPc6GhfSvkUIRVKV0VBAhpVuQibcOM9S6aBttl2NMsX/exec', {
+      fetch("https://script.google.com/macros/s/AKfycbwvrlQkMsfizh3T3Z5uw-CfkGbY6Q_DZ3xSOPxcei2MrFk6NDXmjOpq_6KQaq-E71Yd/exec", {
         method: 'POST',
         mode: 'no-cors',
         body: data
       })
       .then(() => {
-        alert('Solicitação enviada com sucesso!');
+        alert("Solicitação enviada com sucesso!");
         form.reset();
         urgenteExtra.style.display = 'none';
         btnEnviar.disabled = false;
         btnEnviar.textContent = "Enviar Solicitação";
       })
       .catch(err => {
-        alert('Erro ao enviar: ' + err);
+        alert("Erro ao enviar: " + err);
         btnEnviar.disabled = false;
         btnEnviar.textContent = "Enviar Solicitação";
       });
